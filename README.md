@@ -1,4 +1,4 @@
-## The 7 das of devops book
+## The 7 days of devops
 
 > By amirul
 
@@ -8,10 +8,10 @@
 
 #### Docker
 
-- [ ] Apa itu kontainerisasi aplikasi
+- [x] Apa itu docker
 - [ ] What I wish I know
-  - [ ] apa sebenarnya docker images itu
-  - [ ] apa penjelasan termudah tentang docker images dan kontainer
+  - [ ] apa sebenarnya docker images itu?
+  - [ ] apa perbedaan docker images dan kontainer
 - [ ] docker workflow
 - [ ] kontainerisasi react app
 - [ ] build
@@ -115,3 +115,35 @@
 - [ ] Horizontal Pods Autoscaller
 
 #### K3S
+
+---
+
+### Docker
+
+#### 1. Apa itu docker
+
+Docker adalah salah satu teknologi kontainerisasi yang memudahakan developer untuk upload aplikasinya ke server dengan MUDAH
+
+Kenapa diklaim mudah?
+
+Ayok kita coba bandingan dengan cara tradisional dalam mendeploy aplikasi.
+
+Saat kita mau deploy aplikasi ke server dengan cara tradisional, kita harus
+setup dan install berbagai library, package, dan dependensi yang dibtutuhkan oleh aplikasi
+di server agar aplikasi yang kita deploy itu dapat berjalan dengan baik
+
+![Traditional method of deployment](img/1-traditional-method.png)
+
+Kelemaahan dari cara seperti ini apa?
+
+kita mungkin akan memperoleh masalah "it works on my machine" problem. di localhost codenya jalan, tapi di server enggak
+
+Nah dengan adanya docker kita akan membungkus semua keperluan yang dibutuhkan olehaplikasi kita ke dalam suatu IMAGE. dan server yang telah terinstall docker engine dapat langsung menjalankan IMAGE tersebut
+
+![Deployment with docker](img/2-docker-deployment.png)
+
+Melalui cara ini, kita akan terhindar dari masalah it works on my machine problem
+karena keperluan untuk menjalankan aplikasi sudah kita definisikan di awal
+dan orang lain yang ingin gabung ngerjain tinggal minta dockerfile + code app nya
+
+> don't worry, kita akan bahas dockerfile dan Image kok kedepannya
