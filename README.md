@@ -9,9 +9,10 @@
 #### Docker
 
 - [x] Apa itu docker
-- [ ] What I wish I know
-  - [ ] apa sebenarnya docker images itu?
-  - [ ] apa perbedaan docker images dan kontainer
+- [x] Docker image, dockerfile, dan docker container
+  - [x] Docker Image
+  - [x] Dockerfile
+  - [x] Docker Container
 - [ ] docker workflow
 - [ ] kontainerisasi react app
 - [ ] build
@@ -147,3 +148,62 @@ karena keperluan untuk menjalankan aplikasi sudah kita definisikan di awal
 dan orang lain yang ingin gabung ngerjain tinggal minta dockerfile + code app nya
 
 > don't worry, kita akan bahas dockerfile dan Image kok kedepannya
+
+#### 2. Docker Image and Docker Container
+
+##### Docker Image
+
+Docker image adalah hasil penggabungan antara source code program kita dengan berbagai dependensi yang dibutuhkan agar code tersebut dapat dijalankan
+
+Dependensi tersebut dapat berupa base image tempat aplikasi akan dijalankan dan juga config seperti command apa yang dipakai untuk menjalankan aplikasi tersebut
+
+![Docker image](img/3-docker-image.png)
+
+> Masih bingung tentang apa itu base image? jadi base image itu seperti jalan tempat kendaraan (app) kita akan berjalan. misal base image node-alpine:latest adalah jalan tempat kendaraan (app) bertipe node.js akan dijalankan
+
+> Linux OS + App environtment (exemple, node.js) = base image
+
+> App + Dependesinya yang dibutuhkan agar app bisa berjalan = Docker image
+
+##### Dockerfile
+
+Dockerfile adalah file berisi script yang kita tulis untuk membuat docker image. sebeluunya kan kita sudah tau bahwa docker image itu sebenarnya adalah source code app kita + dependensi yang diperlukan agar app kita tersebut dapat berjalan, nah untuk membuat docker image tersebut disini kita harus membuat docker file
+
+![Docker image](img/4-dockerfile.png)
+
+Dockerfile sendiri terbagi ke dalam 3 struktur besar.
+
+1. Dimana harus dijalankan (base image)
+2. Dimana letak source code appnya di local lalu mau di taruh dimana pada base image
+3. bagaimana cara menjalankan aplikasinya
+
+```
+
+FROM node-alpine:18
+
+WORKDIR /app
+
+COPY package.json .
+
+RUN npm install
+
+COPY . .
+
+EXPOSE 4000
+
+CMD ["npm", "run", "dev"]
+
+```
+
+##### Docker Container
+
+Docker container adalah docker image yang telah dijalanakan. kita bisa membuat banyak container dari suatu docker image
+
+![Docker Container](img/5-docker-container.png)
+
+Masih bingung? coba bayangkan kaalu docker image adalah gudang penyimpanan kendaraan,
+maka docker container adalah salah satu kendaraan yang telah dijalankan keluar gudang
+
+![Docker Container](img/6-docker-container-2.png)
+
+Masih bingung juga? ayok kita coba praktek aja langsung ya
