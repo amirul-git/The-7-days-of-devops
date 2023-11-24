@@ -28,6 +28,9 @@
   - [x] Build and Run
   - [x] v1 (Build) vs v2 (Multi stage build)
 - [x] Docker compose
+  - [x] Intro
+  - [x] Struktur docker compose
+  - [x] Docker compose image react
 
 #### ECR, The Container Registry
 
