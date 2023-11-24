@@ -119,9 +119,9 @@
 
 ---
 
-### Docker
+# Docker
 
-#### 1. Apa itu docker
+## 1. Apa itu docker
 
 Docker adalah salah satu teknologi kontainerisasi yang memudahakan developer untuk upload aplikasinya ke server dengan MUDAH
 
@@ -149,9 +149,9 @@ dan orang lain yang ingin gabung ngerjain tinggal minta dockerfile + code app ny
 
 > don't worry, kita akan bahas dockerfile dan Image kok kedepannya
 
-#### 2. Docker Image and Docker Container
+## 2. Docker Image and Docker Container
 
-##### Docker Image
+### Docker Image
 
 Docker image adalah hasil penggabungan antara source code program kita dengan berbagai dependensi yang dibutuhkan agar code tersebut dapat dijalankan
 
@@ -165,7 +165,7 @@ Dependensi tersebut dapat berupa base image tempat aplikasi akan dijalankan dan 
 
 > App + Dependesinya yang dibutuhkan agar app bisa berjalan = Docker image
 
-##### Dockerfile
+### Dockerfile
 
 Dockerfile adalah file berisi script yang kita tulis untuk membuat docker image. sebeluunya kan kita sudah tau bahwa docker image itu sebenarnya adalah source code app kita + dependensi yang diperlukan agar app kita tersebut dapat berjalan, nah untuk membuat docker image tersebut disini kita harus membuat docker file
 
@@ -195,7 +195,7 @@ CMD ["npm", "run", "dev"]
 
 ```
 
-##### Docker Container
+### Docker Container
 
 Docker container adalah docker image yang telah dijalanakan. kita bisa membuat banyak container dari suatu docker image
 
