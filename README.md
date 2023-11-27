@@ -1,10 +1,8 @@
 ## The 7 days of devops
 
-##### Based on writer journey on learning docker to monitoring to kubernetes
-
 > By Amirul-git
 
-> Get taste of becoming a devops engineer with only 7 days or less. From docker, monitoring, to kubernetes and k3s.
+> Get taste of becoming a devops engineer with only 7 days or less. From docker, monitoring, to kubernetes and k3s. Based on writer journey on learning docker to monitoring to Kubernetes
 
 > Note: this is the pre-beta roadmap book, expect changes in future but the big idea is the same
 
