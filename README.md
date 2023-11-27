@@ -1,6 +1,6 @@
 ## The 7 days of devops
 
-#####Based on writer journey on learning docker to monitoring to kubernetes
+##### Based on writer journey on learning docker to monitoring to kubernetes
 
 > By Amirul-git
 
@@ -34,8 +34,10 @@
 
 #### ECR, The Container Registry
 
-- [ ] Quick intro ECR
-- [ ] AWS iam + role + cli
+- [x] Apa itu Container Registry
+- [x] Requirement
+  - [x] AWS iam, user dan permission
+  - [x] AWS CLI
 - [ ] Push image ke ECR
 - [ ] Pull image ke local
 - [ ] Run image dari ECR di local
@@ -473,3 +475,39 @@ services:
     ports:
       - 9000:80
 ```
+
+# ECR, The Container Registry
+
+### Apa itu container registry
+
+Container registry itu bisa diibartkan sebagai git-nya docker image, berfungsi sebagai version control bagi image yang telah di build. Dan ECR (Elastic Container Registry) adalah salah satu container registry ini.
+
+![Workflow production](img/10-container-registry.png)
+
+Kenapa kita harus pakai container registry? agar memudahkan kita dalam melakukan penyimpanan, version control. dan distribusi image yang telah kita build. Karena kan kedepannya kita akan deploy image tersebut ke berbagai server ya.
+
+### Requirement
+
+Sebelum kita menggunakan ECR sebagai container registry, sebelumnya kita harus menyiapkan `role iam` yang memiliki akses untuk membuat container registry
+
+Bagi yang belum punya account AWS bisa login aja dulu ya. Kita bisa pakai beberapa resource secara gratis selama setahunan. [**_<u>Create a new aws account</u>_**](https://aws.amazon.com/resources/create-account/)
+
+#### AWS iam, user dan permissions
+
+> AWS iam digunakan untuk melakukan manajemen terhadap akun aws teman-teman, seperti membuat user baru, dan memberikan hak akses kepada user tersebut.
+
+Setelah itu teman-teman bisa mengakses halaman aws iam dan melanjutkan untuk membuat user baru serta memberikan permission (hak akses) kepada user tersebut sehingga dapat melakukan push ataupun pull image ke container registry `AmazonEC2ContainerRegistryFullAccess`
+
+![Workflow production](img/11-user-permission.png)
+
+#### AWS CLI
+
+> AWS cli merupakan cli app yang digunakan untuk melakukan manajemen resource AWS melalui terminal. Kenapa adanya CLI? karena server linux tidak ada UI GUI nya, jadi mau tidak mau kita harus menggunakan terminal.
+
+Sebelumnya pastikan AWS cli nya sudah terinstal ya. [**_<u>Install AWS CLI</u>_**](https://docs.aws.amazon.com/cli/latest/userguide/getting-started-install.html)
+
+Lalu selanjutnya kita perlu mengatur AWS CLI untuk menggunakan user dengan permission (`AmazonEC2ContainerRegistryFullAccess`) yang telah kita buat sebelumnya dan juga meng set region yang ingin kita pakai.
+
+> region adalah lokasi datacenter aws yang ingin teman-teman gunakan. aws datacenter sendiri tersebar di beberapa negara, dan yang paling dekat dengan indonesia adalah `ap-southeast-1` di singapura dan `ap-southeast-3` di jakarta
+
+![Workflow production](img/12-set-awscli.png)
