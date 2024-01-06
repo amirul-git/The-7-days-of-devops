@@ -36,9 +36,9 @@
 - [x] Requirement
   - [x] AWS iam, user dan permission
   - [x] AWS CLI
-- [ ] Push image ke ECR
-- [ ] Pull image ke local
-- [ ] Run image dari ECR di local
+- [x] Push image ke ECR
+- [x] Pull image dari ECR ke local
+- [x] Run image yang telah di pull dari ECR di local
 
 #### EC2, The Cloud Server
 
@@ -509,3 +509,68 @@ Lalu selanjutnya kita perlu mengatur AWS CLI untuk menggunakan user dengan permi
 > region adalah lokasi datacenter aws yang ingin teman-teman gunakan. aws datacenter sendiri tersebar di beberapa negara, dan yang paling dekat dengan indonesia adalah `ap-southeast-1` di singapura dan `ap-southeast-3` di jakarta
 
 ![Workflow production](img/12-set-awscli.png)
+
+Berikut adalah tampilan AWS user yang telah memiliki permission `AmazonEC2ContainerRegistryFullAccess`
+
+![User with permissions](img/13-aws-iam-permissions.png)
+
+#### Push image ke ECR
+
+Untuk bisa upload image ke ECR, kita perlu untuk login terlebih dahulu di terminal dengan user IAM yang telah kita buat sebelumnya. pastikan user nya sudah memiliki permission `AmazonEC2ContainerRegistryFullAccess` ya.
+
+Selanjutnya kita akan configure terminal kita agar bertindak sebagai IAM role yang telah kita buat, kita bisa ketikkan `aws configure` dan isi semua field yang dibutukan.
+
+![User with permissions](img/14-configure-aws-cli.png)
+
+> AWS Access Key ID dapat di lihat di detail IAM users, tinggal klik create access key dan pilih CLI
+> AWS Secret Key akan teman-teman dapatkan saat membuat AWS Access Key
+> Default region name itu nama access point dari
+
+Berikutnya kita akan coba untuk push image kita yaitu `devops-book:2.0.0` ke ECR. Tapi sebelum itu kita harus buat terlebih dahulu online reponya di page AWS ECR. teman-teman bisa akses halaman ECR lalu klik create repository
+
+Setelah berhasil dibuat, teman-teman bisa klik view push commands button dan ikuti instruksi push image nya ke ECR
+
+![Created a ECR repository](img/16-repository-created.png)
+
+```
+<!-- build dulu image nya jika belum -->
+docker build -t devops-book:2.0.0 .
+
+<!-- rename build image sesuai nama repo -->
+docker tag devops-book:2.0.0 nama-repo-aws-ecr:latest
+
+<!-- push docker image ke repo -->
+docker push nama-repo-aws-ecr:latest
+```
+
+Saat push image berhasil teman-teman akan dapat melihat ada image baru yang terupload.
+
+![Image created](img/17-docker-image-pushed.png)
+
+#### Pull image dari ECR ke local
+
+Karena kita telah berhasil upload image kita di ECR, sekarang kita bisa pull image tersebut baik ke local maupun ke server untuk di run.
+
+![Pull image from ECR](img/18-pull-image-ecr.png)
+
+Untuk pull image dari ECR kita bisa gunakan `docker pull nama-image-nya:tag`
+
+Misal nama image kita di repo ecr adalah 123/devops-book:latest, maka untuk pull image tersebut dari ECR ke local adalah sebagai berikut
+
+```
+docker pull 123/devops-book:latest
+```
+
+#### Run image yang telah di pull dari ECR di local
+
+Untuk run docker image, kita bisa gunakan `docker run nama-image:tag`
+
+Jadi kalau nama image kita adalah `123/devops-book:latest` maka untuk run image tersebut adalah
+
+```
+docker run 123/devops-book:latest
+```
+
+Berikut adalah tampilan app yang kita run dari image yang telah kita pull dari ECR sebelumnya.
+
+![Pull image from ECR](img/19-run-image-in-local.png)
