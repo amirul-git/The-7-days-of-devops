@@ -42,11 +42,10 @@
 
 #### EC2, The Cloud Server
 
-- [ ] EC2 quick intro
-- [ ] Update aws iam role
-- [ ] Spin up a new EC2 Instance
-- [ ] Set up deps, docker, aws cli, login ecr
-- [ ] Run docker coompose
+- [x] Apa itu EC2
+- [x] Membuat EC2 instance
+- [x] Setup `docker`, `aws cli`, login `ecr`
+- [ ] Setup docker compose
 - [ ] Set up aws security to port 80
 - [ ] Access via browser
 
@@ -574,3 +573,164 @@ docker run 123/devops-book:latest
 Berikut adalah tampilan app yang kita run dari image yang telah kita pull dari ECR sebelumnya.
 
 ![Pull image from ECR](img/19-run-image-in-local.png)
+
+# ECR, The Container Registry
+
+#### Apa itu EC2
+
+EC2 (Elastic Compute Cloud) merupakan server virtual. Jadi ibaratnya kita memiliki komputer yang dapat kita jadikan apapun baik itu untuk serve aplikasi web, untuk training AI, ataupun untuk nambang bitcoin juga bisa loh (canda gaess, kita gk boleh nambang bitcoin pakai `ec2` ya, pelanggaran)
+
+Umumnya kita akan menggunakan EC2 untuk serve aplikasi web maupun API, dan enaknya kita bisa milih beragam spesifikasi yang cocok untuk kebutuhan kita dan harga paling murah itu sekitar $3+, free satu tahun kalau teman-teman cuma pengen test-test ombak dan kalau mau lebih murah lagi teman-teman bisa pakai `spot instance`
+
+#### Membuat `ec2` instance
+
+Untuk membuat `ec2` baru teman-teman bisa search `ec2` di search bar aws nya teman-teman, klik aja. Lalu saat sudah di dashboard `ec2` klik launch instance
+
+![Pull image from ECR](img/20-launch-instances.png)
+
+Lalu di bagian OS, bisa pilih ubuntu aja dulu, jangan aneh aneh, kenapa pilih ubuntu? karena yang paling familiar :)
+
+![Pull image from ECR](img/21-chose-ubuntu.png)
+
+Terus teman-teman buat dulu ya keypair-nya, namanya bebas aja gpp dan formatnya pilih yang .pem dan typenya rsa. key pair yang kita buat ini akan ke pakai untuk akses server melalui `ssh`
+
+![Pull image from ECR](img/22-key-pair.png)
+
+Sip, itu dulu yang perlu kita set, teman-teman bisa lanjut create instancenya. `ec2` instance yang udah dibuat akan muncul di dashboard `ec2` ya dan untuk akses nya teman-teman bisa akses melalui built-in terminal nya.
+
+Tapi lebih nyamannya kita akan pakai terminal kita sendiri aja ya, file .pem tadi akan jadi key untuk ssh kita. step penggunannya sebenarnya sudah diberikan. teman-teman tinggal klik tombol connect dan pilih ssh client
+
+![Pull image from ECR](img/23-terminal-ssh.png)
+
+Berikutnya kita akan lanjut untuk setup `ec2` instance kita tadi agar bisa jalanin docker dan run image react kita, yeay.
+
+#### Setup `docker`, `aws cli`, login `ecr` di `ec2 instance`
+
+Sekarang kan kita udah punya `ec2` instance untuk cloud server kita ya, nah cloud server ini dalamnya masih kosongan gaess, isinya cuma os ubuntu-server yang kita pilih diawal pembuatan tadi.
+
+Agar kita jalankan aplikasi react terkontainerisasi yang telah kita push di `ecr`, kita perlu install dan setup beberapa hal ini. kita perlu install `docker`, install `aws cli`, login dengan `iam role` yang telah kita buat dan pull image kita tadi ke `ec2` instance. Terakhir kita akan buat `docker compose` agar run/stop aplikasinya lebih mudah.
+
+kita jadikan todolist aja kali ya biar gampang :), nanti teman-teman bisa centang deh apa aja yang selesai dan belum selesai
+
+- [ ] Install `docker`
+- [ ] Install `aws cli`
+- [ ] Login ke aws cli dengan `iam` yang sudah kita buat
+- [ ] Login ke `ecr` agar bisa pull image
+- [ ] Pull image react kita dari `ecr`
+- [ ] Buat `docker compose`
+- [ ] Run container melalui `docker compose`
+
+#### Install `docker`
+
+Ok, kita mulai dari install `docker` nya ya, teman-teman bisa search di google `install docker engine` lalu klik yang mengarah ke dokumentasi dockernya aja ya. jangan lupa pilih linux dan variannya ubuntu. ikuti step by step nya dari docs.
+
+> Jangan sampai salah ya gess, yang akan kita pakai disini adalah docker engine, bukan docker desktop.
+
+Hapus package yang kemungkinan bikin conflict
+
+```
+for pkg in docker.io docker-doc docker-compose docker-compose-v2 podman-docker containerd runc; do sudo apt-get remove $pkg; done
+```
+
+Setup docker apt
+
+```
+# Add Docker's official GPG key:
+sudo apt-get update
+sudo apt-get install ca-certificates curl gnupg
+sudo install -m 0755 -d /etc/apt/keyrings
+curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /etc/apt/keyrings/docker.gpg
+sudo chmod a+r /etc/apt/keyrings/docker.gpg
+
+# Add the repository to Apt sources:
+echo \
+  "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu \
+  $(. /etc/os-release && echo "$VERSION_CODENAME") stable" | \
+  sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+sudo apt-get update
+
+```
+
+Install docker package
+
+```
+sudo apt-get install docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
+```
+
+Cek apakah instalasi kita berhasil dengan run image hello world nya
+
+```
+sudo docker run hello-world
+
+```
+
+Berikut message yang muncul setelah kita berhasil run image hello-world
+
+```
+Unable to find image 'hello-world:latest' locally
+latest: Pulling from library/hello-world
+c1ec31eb5944: Pull complete
+Digest: sha256:ac69084025c660510933cca701f615283cdbb3aa0963188770b54c31c8962493
+Status: Downloaded newer image for hello-world:latest
+
+Hello from Docker!
+This message shows that your installation appears to be working correctly.
+
+```
+
+Yeay, docker sudah berhasil teristall :)
+
+#### Install `aws cli`
+
+karena kita akan berinteraksi dengan produk cloud aws, maka kita juga perlu install aws cli di cloud ya gess. [Install aws cli](https://docs.aws.amazon.com/cli/latest/userguide/getting-started-install.html)
+
+Sebelum install `aws cli` kita perlu perlu install unzip terlebih dahulu
+
+```
+sudo apt install unzip
+```
+
+Lalu kita bisa lanjut install aws cli
+
+```
+curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
+unzip awscliv2.zip
+sudo ./aws/install
+```
+
+Setelah itu kita bisa login ke iam role kita di aws cli, agar kita bisa pull image react kita
+
+#### Setup `aws cli` sampai pull image dari `ecr`
+
+Kita perlu mengatur `aws cli` agar menggunakan `iam role` yang telah kita buat sebelumnya sehingga kita bisa pull image react dari repo `ecr`
+
+```
+aws configure
+```
+
+Input semua data yang diperlukan, dan kita bisa coba pull image kita dari `ecr`
+
+Untuk pull image kita dari `ecr` ke `ec2` instance, kita harus login ke ecr dulu ya
+
+> untuk commandnya, teman-teman bisa akses halaman push image dan ambil yang bagian login :)
+
+```
+aws ecr get-login-password --region ap-southeast-1 | sudo docker login --username AWS --password-stdin 123.dkr.ecr.ap-southeast-1.amazonaws.com
+```
+
+Setelah berhasil login, bisa lanjut pull deh image react nya.
+
+```
+docker pull 123.dkr.ecr.ap-southeast-1.amazonaws.com/devops-book:latest
+```
+
+Setelah proses pull selesai teman-teman bisa cek image yang teman-teman miliki
+
+```
+sudo docker images
+```
+
+![Pull image from ECR](img/24-success-pull.png)
+Voila, sekarang image react kita yang dari `ecr` sudah ter-pull di `ec2`
+
+#### Membuat `docker-compose`
