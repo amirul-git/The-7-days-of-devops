@@ -45,9 +45,7 @@
 - [x] Apa itu EC2
 - [x] Membuat EC2 instance
 - [x] Setup `docker`, `aws cli`, login `ecr`
-- [ ] Setup docker compose
-- [ ] Set up aws security to port 80
-- [ ] Access via browser
+- [x] Setup docker compose
 
 #### Github Action, The glue of CI/CD
 
@@ -734,3 +732,78 @@ sudo docker images
 Voila, sekarang image react kita yang dari `ecr` sudah ter-pull di `ec2`
 
 #### Membuat `docker-compose`
+
+`Docker compose` merupakan tools yang memudahkan kita dalam melakukan menajemen kontainer. Dari yang biasanya kita harus ngetik banyak command setiap kali mau setup aplikasi
+
+```
+#jalankan container app
+docker run devopsbook:2.0.0 -p 80:80
+
+#jalankan kontainer DB
+docker run ...
+
+#jalankan container cache
+docker run ...
+```
+
+Jadi sesimpel dan semudah
+
+```
+docker compose up
+```
+
+`Docker compose` sebenarnya adalah sebuah file `.yaml` yang di dalamnya berisi konfigurasi untuk menjalankan kontainer.
+
+Struktur penjelasan lebih detail tentang docker compose teman-teman bisa refer lagi di materi `docker compose` di atas karena kali ini kita akan fokus membuat docker compose untuk image `devops-book:2.0.0`
+
+Btw Kita nulis docker compose nya itu di server ya, jadi teman-teman ssh dulu ke server lalu buat file `compose.yaml`
+
+```
+touch compose.yaml
+
+nano compose.yaml
+```
+
+Lalu salin konfigurasi `docker compose` berikut ke compose.yaml
+
+```
+services:
+  frontend:
+    image: 1234.dkr.ecr.ap-southeast-1.amazonaws.com/devops-book
+    ports:
+      - "80:80"
+```
+
+Untuk menjalankan docker compose dari file `compose.yaml`, kita perlu ketik command
+
+```
+docker compose up -d
+```
+
+> -d agar berjalan di background ya, jadi terminal ssh nya masih bisa kita pakai
+
+Nah sekarang teman-teman bisa akses website teman-teman melalui alamat IP public server `ec2`. Hasil nya pasti akan error seperti dibawah
+
+![Pull image from ECR](img/25-ec2-error.png)
+
+Wow, server kita ternyata jadi unreacheble gaess. kenapa ya wkwk
+
+Tenang gaess, hal ini terjadi karena kita belum atur server `ec2` kita untuk dapat menerima akses dari port 80 `http`.
+
+Jadi yang perlu kita lakukan untuk solve problem ini sebenarnya hanya perlu menambahkan port 80 `http` ke dalam inbound rule security group `ec2` kita seperti dibawah
+
+![Edit inbound rule](img/26-inbound-rule.png)
+
+Sekarang setelah ditambahkan port 80, kita coba akses lagi
+
+![Edit inbound rule](img/27-server-up.png)
+
+Yeay, selamat, aplikasi `react docker` kita sudah bisa jalan di `ec2`
+
+Tapi gimana kalau kita ada update versi baru? prosesnya gimana supaya bisa app kita terupdate?
+
+Caranya sebenarnya agak capek, kita perlu untuk down kan dulu docker composenya, lalu pull versi terbaru dari image aplikasi kita, dan update kembali docker compose nya lalu jalankan lagi `docker compose up`
+
+Kalau update nya sebulan sekali gpp lah ya capek-capek dikit, tapi gimana kalau setiap menit ada update baru dari aplikasi kita? capek banget kan harus melakukan proses repetitif kayak diatas
+
+Oleh karena itu kita akan automasi seluruh pekerjaan repetitif tadi menggunakan `github action`
