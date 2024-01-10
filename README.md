@@ -46,6 +46,7 @@
 - [x] Membuat EC2 instance
 - [x] Setup `docker`, `aws cli`, login `ecr`
 - [x] Setup docker compose
+- [x] Mengakses aplikasi melalui browser
 
 #### Github Action, The glue of CI/CD
 
@@ -781,6 +782,8 @@ docker compose up -d
 ```
 
 > -d agar berjalan di background ya, jadi terminal ssh nya masih bisa kita pakai
+
+#### Mengakses aplikasi melalui browser
 
 Nah sekarang teman-teman bisa akses website teman-teman melalui alamat IP public server `ec2`. Hasil nya pasti akan error seperti dibawah
 
