@@ -6,6 +6,14 @@
 
 > Note: this is the pre-beta roadmap book, expect changes in future but the big idea is the same
 
+```mermaid
+graph LR;
+A-->B;
+A-->C;
+B-->D;
+C-->D;
+```
+
 #### Docker
 
 - [x] Apa itu docker
