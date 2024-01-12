@@ -1,24 +1,22 @@
-## The 7 days of devops
+## The 7 days of devops `pre-alpha release`
 
-> By Amirul-git
+Get taste of becoming a `devops engineer` with only 7 days or less. From `docker`, `monitoring`, to `kubernetes` and `k3s`. Based on writer journey on learning `docker` to `monitoring` to `Kubernetes` adn `k3s` ~ **_author, amirul-git_**
 
-> Get taste of becoming a devops engineer with only 7 days or less. From docker, monitoring, to kubernetes and k3s. Based on writer journey on learning docker to monitoring to Kubernetes
+> This is the pre-alpha roadmap book, expect changes in future but the big idea is the same
 
-> Note: this is the pre-beta roadmap book, expect changes in future but the big idea is the same
+#### [Docker](#docker)
 
-#### Docker
-
-- [x] Apa itu docker
-- [x] Docker image, dockerfile, dan docker container
-  - [x] Docker Image
-  - [x] Dockerfile
-  - [x] Docker Container
-- [x] Docker workflow
-- [x] Kontainerisasi aplikasi
-  - [x] Requirement
-  - [x] Create Dockerfile
-  - [x] Build Image
-  - [x] Run Image
+- [x] [Apa itu docker](#apa-itu-docker)
+- [x] [Docker fundamental](#docker-fundamental)
+  - [x] [Docker image](#docker-image)
+  - [x] [Dockerfile](#dockerfile)
+  - [x] [Docker container](#docker-container)
+- [x] [Docker workflow](#docker-workflow)
+- [x] [Kontainerisasi aplikasi](#kontainerisasi-aplikasi)
+  - [x] [Requirement](#requirement)
+  - [x] [Create dockerfile](#create-dockerfile)
+  - [x] [Build image](#build-image)
+  - [x] [Run image](#run-image)
 - [x] Optimasi docker image dengan multi stage build
   - [x] Problem dari docker image yang tidak teroptimasi
   - [x] Requirement
@@ -131,57 +129,77 @@
 
 # Docker
 
-### 1. Apa itu docker
+### Apa itu `docker`
 
-Docker adalah salah satu teknologi kontainerisasi yang memudahakan developer untuk upload aplikasinya ke server
+`Docker` adalah salah satu teknologi kontainerisasi yang memudahakan developer untuk deploy aplikasinya ke server
 
-Kenapa diklaim mudah?
+Kenapa dengan menggunakan `docker` proses deployment bisa jadi lebih mudah?
 
-Ayok kita coba bandingan dengan cara tradisional dalam mendeploy aplikasi.
+Ayok sekarang kita coba bandingkan deh, cara kita deploy aplikasi dengan cara tradisional dan dengan menggunakan `docker`
 
-Saat kita mau deploy aplikasi ke server dengan cara tradisional, kita harus setup dan install berbagai library, package, dan dependensi yang dibutuhkan oleh aplikasi di server agar aplikasi yang kita deploy itu dapat berjalan dengan baik
+##### Tradisional way
 
-![Traditional method of deployment](img/1-traditional-method.png)
+Dengan metode tradisonal, kita harus setup dan install berbagai `library`, `package`, dan `dependensi` yang dibutuhkan oleh aplikasi kita di server agar aplikasi kita berjalan dengan baik
 
-Kelemaahan dari cara seperti ini apa?
+![Deployment with docker](img/1-traditional-method.png)
 
-Kita mungkin akan mendapatkan masalah "it works on my machine" problem. Di localhost codenya jalan, tapi di server enggak
+Sebenarnya metode di atas itu fine-fine aja ya, tapi dengen tetap melestarikan cara diatas, masalah-masalah ngeselin seperti `it works on my machine probem` suatu saat akan muncul. Di `local machine` app kita jalan normal, tapi pas di server gk jalan samsek dan malah muncul warning sampai error-error yang ajaib.
 
-Nah dengan adanya docker kita akan membungkus semua keperluan yang dibutuhkan olehaplikasi kita ke dalam suatu IMAGE. dan server yang telah terinstall docker engine dapat langsung menjalankan IMAGE tersebut
+Capek kan ya kalau kita harus solve satu-satu. Kalau kita yang buat aplikasinya gpp lah ya, setidaknya kita bisa ngerti how to solve the problem-nya, tapi gimana coba kalau kita cuma di handover untuk dideploy..., bisa wasalam malam minggu kita wkwkw
+
+Nah dengan menggunakan `docker`, problem diatas bisa langsung kita lenyapkan.
+
+##### Docker way
+
+Kalau kita menggunakan docker untuk deployment aplikasi, setiap `dependensi`, `config`, dan `keperluan lain` yang dibutuhkan oleh aplikasi kita akan di bungkus jadi satu menjadi sebuah `docker image` yang bisa dijalankan langsung oleh server yang telah terinstall `docker engine`
 
 ![Deployment with docker](img/2-docker-deployment.png)
 
-Melalui cara ini, kita akan terhindar dari masalah it works on my machine problem karena keperluan untuk menjalankan aplikasi sudah kita definisikan di awal dan orang lain yang ingin gabung ngerjain tinggal minta dockerfile + code app nya
+Dengan menerapkan `docker` seperti cara diatas, kita dapat terhindar dari masalah `it works on my machine` karena setiap keperluan untuk menjalankan aplikasi telah kita bundle menjadi sebuah `docker image`
 
-> Don't worry, kita akan bahas Dockerfile dan docker Image kok kedepannya
+Selain itu orang lain yang ingin ikut develop aplikasi kita juga jadi lebih mudah karena kita tinggal berikan `code app` + `dockerfile`
 
-### 2. Docker Fundamental
+> santuy santuy, kita akan bahas dockerfile dan docker image kok kedepannya
 
-#### Docker Image
+### Docker Fundamental
 
-Docker image adalah hasil penggabungan antara source code program kita dengan berbagai dependensi yang dibutuhkan agar code aplikasi tersebut dapat dijalankan.
+#### Docker image
 
-Dependensi tersebut dapat berupa base image tempat aplikasi akan dijalankan dan juga config seperti command apa yang dipakai untuk menjalankan aplikasi tersebut.
+`Docker image` adalah hasil penggabungan antara `source code` program kita dengan berbagai `dependensi` yang dibutuhkan agar code aplikasi tersebut dapat dijalankan.
 
-![Docker image](img/3-docker-image.png)
+Dependensi tersebut dapat berupa `base image` yang merupakan tempat aplikasi akan dijalankan, serta `config` seperti command apa yang dipakai untuk menjalankan aplikasi tersebut.
 
-> Masih bingung tentang apa itu base image? jadi base image itu seperti jalan tempat kendaraan (app) kita akan berjalan. Misal base image node-alpine:latest adalah jalan tempat kendaraan (app) bertipe node.js akan dijalankan
+```mermaid
+graph LR
+A[base image]-->C
+B[config]-->C
+C[deps]-->F[docker image]
+D[app code]-->F
 
-> Linux OS + App environtment (example, node.js) = base image
+```
 
-> App + Dependesinya yang dibutuhkan agar app bisa berjalan = Docker image
+> Masih bingung tentang apa itu `base image`? jadi `base image` itu seperti jalan tempat kendaraan (app) kita akan berjalan. Misal `base image` `node-alpine:latest` adalah jalan tempat kendaraan (app) bertipe `node.js` akan dijalankan
+
+> `Linux OS` + `App environtment` (example, node.js) = `base image`
+
+> `App` + `Dependesi` yang dibutuhkan agar app bisa berjalan = `Docker image`
 
 #### Dockerfile
 
-Dockerfile adalah file berisi script yang kita tulis untuk membuat docker image. Sebelumnya kan kita sudah tau bahwa docker image itu sebenarnya adalah source code app kita + dependensi yang diperlukan agar app kita tersebut dapat berjalan, nah untuk membuat docker image tersebut disini kita harus membuat dockerfile-nya
+`Dockerfile` adalah file berisi script yang kita tulis untuk membuat `docker image`. Sebelumnya kan kita sudah tau bahwa `docker image` itu sebenarnya adalah `source code app` kita + `dependensi` yang diperlukan agar app kita tersebut dapat berjalan, nah untuk membuat `docker image` tersebut disini kita harus membuat `dockerfile`-nya
 
-![Docker image](img/4-dockerfile.png)
+```mermaid
+graph LR
+A[app source code]-->C
+B[deps]-->C
+C[dockerfile]-->D[docker image]
+```
 
-Dockerfile sendiri terbagi ke dalam 3 struktur besar.
+`Dockerfile` sendiri terbagi ke dalam 3 struktur besar.
 
-1. Dimana harus dijalankan (base image)
-2. Dimana letak source code appnya di local lalu mau di taruh dimana pada base image (code setup)
-3. bagaimana cara menjalankan aplikasinya (run)
+1. Dimana harus dijalankan (`base image`)
+2. Dimana letak source code appnya di local lalu mau di taruh dimana pada base image (`code location`)
+3. bagaimana cara menjalankan aplikasinya (`run`)
 
 ```
 ###### base image ######
@@ -189,6 +207,7 @@ Dockerfile sendiri terbagi ke dalam 3 struktur besar.
 FROM node-alpine:18
 
 ###### base image ######
+
 
 ### code setup ###
 
@@ -202,6 +221,7 @@ COPY . .
 
 ###### code setup ######
 
+
 ###### run ######
 
 EXPOSE 4000
@@ -214,58 +234,94 @@ CMD ["npm", "run", "dev"]
 
 #### Docker Container
 
-Docker container adalah docker image yang telah dijalanakan. kita bisa membuat banyak container dari suatu docker image
+`Docker container` adalah `docker image` yang telah dijalanakan. Btw kita bisa membuat banyak `container` dari suatu `docker image`
 
-![Docker Container](img/5-docker-container.png)
+```mermaid
+graph LR
+A[docker image]-->B[container A]
+A-->C[container B]
+A-->D[container D]
+```
 
-Masih bingung? coba bayangkan kalau docker image adalah gudang penyimpanan kendaraan, maka docker container adalah salah satu kendaraan yang telah dijalankan keluar gudang
+Masih bingung? coba bayangkan kalau `docker image` adalah gudang penyimpanan kendaraan, maka `docker container` adalah salah satu kendaraan yang telah dijalankan
 
 ![Docker Container](img/6-docker-container-2.png)
 
-Masih bingung juga? ayok kita coba praktek aja langsung ya, tapi sebelum itu kita perlu tau dulu bagaimana cara kita bekerja dengan docker (docker workflow)
+Masih bingung juga? ayok kita coba praktek aja langsung ya, tapi sebelum itu kita perlu tau dulu bagaimana cara kita bekerja dengan `docker` (`docker workflow`)
 
-## Docker Workflow
+## Docker workflow
 
 Ada 2 workflow (proses kerja) yang bisa kita terapkan dalam menggunakan docker. Workflow production (code nya selesai dulu semua lalu buat dockerfile), Workflow hybrid (dockerfile dan code dibuat secara bersamaan dan diubah sesuai kebutuhan)
 
 #### 1. Production
 
-Workflow production itu mengutamakan code nya agar selesai dulu, setelah itu kita baru membuat dockerfile sesuai dengan kebutuhan kode app kita.
+`Workflow production` adalah workflow yang mengutamakan code nya agar selesai aja dulu, lalu setelah itu kita baru membuat dockerfile-nya sesuai dengan kebutuhan.
 
-![Workflow production](img/7-workflow-production.png)
+```mermaid
+graph LR
+A[production code]-->B
+B[write dockerfile]-->C
+C[build to image]-->D[deploy]
+```
 
 #### 2. Hybrid
 
-Workflow hybrid berfokus pada perkembangan sistem, dan umumnya diterapkan pada project baru yang memang direncanakan untuk menggunakan docker. Dalam workflow ini dockerfile dan code dibuat bersamaan dan dikembangkan sesuai kebutuhan.
+Workflow hybrid berfokus pada perkembangan sistem, dan umumnya diterapkan pada project baru yang memang direncanakan untuk menggunakan `docker`. Dalam workflow ini `dockerfile` dan code dibuat bersamaan dan dikembangkan sesuai kebutuhan .
 
-![Workflow production](img/8-workflow-hybrid.png)
+```mermaid
+graph LR
+A[dev code]-->C
+B[write dockerfile]-->C
+C[build to image]-->D[deploy]
+```
 
 ## Kontainerisasi Aplikasi
 
-Setelah kita mengatahui dasar dari docker, kali ini kita akan coba menerapkan pemahaman kita untuk mengkontainerisasi lalu build docker image dari suatu aplikasi.
+Karena kita telah ngerti dasar dari docker, sekarang kita akan coba lanjut prakatek ya ges ya. Biar ilmu kita semakin setrong...
 
-Untuk studi kasusnya kita akan pakai aplikasi hello world react.
+Studi kasus yang akan kita gunakan adalah aplikasi `react hello-world` dari `vite`
 
-#### 1. Requirement
+Santuy..., kita gk akan ngoding react kok, kita hanya akan gunakan aplikasi react yang sudah ada untuk praktek ilmu-ilmu `docker` kita
 
-Untuk dapat mengkontainerisasi aplikasi. kita sebelumnya harus tau dulu bagaimana cara menjalankan aplikasi tersebut di local, lalu setelah itu kita bisa mulai dan faham cara untuk menulis dockerfile nya.
+#### Requirement
 
-Misal, karena kita akan menggunakan react, maka kita harus mengerti bagaimana menjalankan aplikasi tersebut di localhost dan apa saja dependensi yang dibutuhkan agar aplikasi tersebut dapat berjalan.
+Agar kita bisa ngerti cara kontainerisasi aplikasi, kita seblumnya harus ngerti dulu nich gimana cara menjalankan suatu aplikasi `react` di `local machine`. Dengan langkah demikian, kita akan lebih mudah dan lebih tau step by step untuk menulis `dockerfile`-nya
+
+> Karena pada akhirnya ya, dockerfile itu cuma file konfigurasi agar docker ngerti apa aja yang dibutuhkan oleh aplikasi kita untuk dapat berjalan dan gimana cara menjalankannya
+
+Misal, karena kita akan menggunakan `react`, maka kita harus ngerti dulu gimana cara menjalankan aplikasi `react` di `local machine` dan apa saja `dependensi` yang dibutuhkan agar aplikasi tersebut dapat berjalan.
 
 ```
-# menjalankan aplikasi react, port nya di 5173
-npm run dev
+npm run dev #command run react
 ```
+
+> karena kita menggunakan vite, portnya otomatis di 5173, jadi untuk aksesnya localhost:5173
 
 Di react, dependensi aplikasi tersimpan di package.json, dan kita bisa gunakan `npm install` untuk menginstall dependensi tersebut sebelum menjalankan aplikasi agar aplikasnya bisa dijalankan.
 
-#### 2. Create Dockerfile
+#### Create Dockerfile
 
-Sekarang kita ngerti kalau react ternyata perlu dependensi yang harus di install, cara installnya kita udah tau, dan kita juga udah tau gimana cara menjalankan aplikasi react kita tersebut, jadi sekarang kita bisa lanjut untuk membuat dockerfilenya.
+Sekarang kita ngerti kalau aplikasi `react` kita akan jalan di `port 5173` dan perlu dependensi yang harus di install dulu sebelum di jalankan pertama kali
+
+Sekarang cara install dependensinya kita udah tau, dan kita juga udah ngerti gimana cara menjalankan aplikasi `react` kita tersebut, jadi sekarang kita bisa lanjut untuk membuat `dockerfile`-nya.
+
+Buat file dengan nama Dockerfile
 
 ```
-# task: buat file dengan nama Dockerfile
+touch Dockerfile
+```
 
+Lalu buat script untuk dockerfile-nya. React kan berjalan di node ya, jadi kita perlu `base image` `node js`, disini kita pakai `node:18-alpine`, berikutnya kita mau taruh mana sih source code aplikasinya? kita akan taruh di folder `/app` biar tertata rapi, jadi kita akan tetapkan `workdir` nya adalah `/app` kalau gitu
+
+Berikutnya kita akan taruh duluan `package.json` nya ya, karena kan untuk berjalan aplikasi kita harus ada dependensinya dulu kan ya
+
+Setelah itu, step berikutnya adalah menaruh source code aplikasi kita ke workdir yang telah kita buat sebelumnya yaitu `/app`, tapi karena kita nulis `dockerfile`-nya di tempat yang sama dengan source code app kita, maka kita bisa singkat dengan titik titik aja `COPY . .`, lalu karena app kita dijalankan di `port 5173` kita harus expose port nya agar bisa jalan juga di local
+
+Terakhir kita tulis gimana cara kita untuk menjalankan aplikasi, yaitu `npm run dev`
+
+Hasil akhirnya seperti dibawah ya ges, syntax seperti `FROM`, `WORKDIR`, `COPY`, `EXPOST`, `RUN` merupakan command `docker`. Santuy, gk perlu dipelajari semua, umumnya diawal kita cuma butuh yang dasar-dasar dulu seperti diatas.
+
+```
 FROM node:18-alpine
 
 WORKDIR /app
@@ -282,15 +338,15 @@ CMD [ "npm", "run", "dev" ]
 
 ```
 
-#### 3. Build Image
+#### Build image
 
-Untuk membuat membuat image dari dockerfile tersebut kita bisa gunakan `docker build` command di terminal
+Untuk membuat membuat image dari `dockerfile` diatas kita bisa gunakan `docker build` command di terminal
 
 ```
 docker build -t devopsbook:1.0.0 .
 ```
 
-Tapi sebelum di build teman-teman harus ubah dulu `viteconfig.js` nya agar bisa menggunakan docker.
+Tapi sebelum di build teman-teman harus ubah dulu `viteconfig.js` nya agar bisa menggunakan `docker`.
 
 ```
 // dari code seperti ini
@@ -313,15 +369,15 @@ export default defineConfig({
 
 ```
 
-Selain itu kita akan membuat file `.dockerignore` untuk file-file yang tidak seharusnya kita tambahkan ke dalam image
+Selain itu kita akan membuat file `.dockerignore` untuk file-file yang tidak seharusnya kita tambahkan ke dalam `docker image`
+
+Buat `.dockerignore` file, lalu tambahkan node_modules agar gk di include juga di `docker image` kita
 
 ```
-# task: buat docker ignore dan tambahkan node_module
-
 node_modules
 ```
 
-#### 4. Run Image
+#### Run image
 
 Dan untuk menjalan image tersebut menjadi kontainer kita bisa gunakan `docker run` command
 
@@ -331,7 +387,7 @@ Dan untuk menjalan image tersebut menjadi kontainer kita bisa gunakan `docker ru
 docker run -d -p 5173:5173 devopsbook:1.0.0
 ```
 
-Sekarang kita bisa mengakses aplikasi react kita yang telah terkontainerisasi tersebut di `localhost:5173`
+Sekarang kita bisa mengakses aplikasi `react` kita yang telah terkontainerisasi tersebut di `localhost:5173`
 
 ![Workflow production](img/9-app.png)
 
