@@ -141,7 +141,15 @@ Ayok sekarang kita coba bandingkan deh, cara kita deploy aplikasi dengan cara tr
 
 Dengan metode tradisonal, kita harus setup dan install berbagai `library`, `package`, dan `dependensi` yang dibutuhkan oleh aplikasi kita di server agar aplikasi kita berjalan dengan baik
 
-![Deployment with docker](img/1-traditional-method.png)
+```mermaid
+graph LR
+A[app]-->B[server]
+C[config]-->B
+D[deps]-->B
+E[runtime]-->B
+```
+
+> Agak ajaib sih cara seperti ini, kita harus utak-atik server agar app kita bisa jalan
 
 Sebenarnya metode di atas itu fine-fine aja ya, tapi dengen tetap melestarikan cara diatas, masalah-masalah ngeselin seperti `it works on my machine probem` suatu saat akan muncul. Di `local machine` app kita jalan normal, tapi pas di server gk jalan samsek dan malah muncul warning sampai error-error yang ajaib.
 
@@ -153,7 +161,17 @@ Nah dengan menggunakan `docker`, problem diatas bisa langsung kita lenyapkan.
 
 Kalau kita menggunakan docker untuk deployment aplikasi, setiap `dependensi`, `config`, dan `keperluan lain` yang dibutuhkan oleh aplikasi kita akan di bungkus jadi satu menjadi sebuah `docker image` yang bisa dijalankan langsung oleh server yang telah terinstall `docker engine`
 
-![Deployment with docker](img/2-docker-deployment.png)
+```mermaid
+graph LR
+A[docker engine]-->B[server]
+C[docker image]-->B
+D[app]-->C
+E[config]-->C
+F[deps]-->C
+g[runtime]-->C
+```
+
+> Lebih simple kan, sekarang yang perlu kita deploy ke server hanya docker image nya aja, gk perlu repot-repot setup config, deps, runtime, dll-nya
 
 Dengan menerapkan `docker` seperti cara diatas, kita dapat terhindar dari masalah `it works on my machine` karena setiap keperluan untuk menjalankan aplikasi telah kita bundle menjadi sebuah `docker image`
 
@@ -167,22 +185,22 @@ Selain itu orang lain yang ingin ikut develop aplikasi kita juga jadi lebih muda
 
 `Docker image` adalah hasil penggabungan antara `source code` program kita dengan berbagai `dependensi` yang dibutuhkan agar code aplikasi tersebut dapat dijalankan.
 
-Dependensi tersebut dapat berupa `base image` yang merupakan tempat aplikasi akan dijalankan, serta `config` seperti command apa yang dipakai untuk menjalankan aplikasi tersebut.
+Dependensi tersebut dapat berupa `base image` yang merupakan tempat aplikasi akan dijalankan (`runtime`), serta `config` seperti command apa aja yang dipakai untuk menjalankan aplikasi tersebut.
 
 ```mermaid
 graph LR
 A[base image]-->C
 B[config]-->C
-C[deps]-->F[docker image]
+C[dependensi]-->F[docker image]
 D[app code]-->F
 
 ```
 
 > Masih bingung tentang apa itu `base image`? jadi `base image` itu seperti jalan tempat kendaraan (app) kita akan berjalan. Misal `base image` `node-alpine:latest` adalah jalan tempat kendaraan (app) bertipe `node.js` akan dijalankan
 
-> `Linux OS` + `App environtment` (example, node.js) = `base image`
+> `Linux OS` + `runtime` (example, node.js) = `base image`
 
-> `App` + `Dependesi` yang dibutuhkan agar app bisa berjalan = `Docker image`
+> `App` + `Dependensi` yang dibutuhkan agar app bisa berjalan = `Docker image`
 
 #### Dockerfile
 
@@ -191,7 +209,7 @@ D[app code]-->F
 ```mermaid
 graph LR
 A[app source code]-->C
-B[deps]-->C
+B[dependensi]-->C
 C[dockerfile]-->D[docker image]
 ```
 
@@ -266,7 +284,7 @@ C[build to image]-->D[deploy]
 
 #### 2. Hybrid
 
-Workflow hybrid berfokus pada perkembangan sistem, dan umumnya diterapkan pada project baru yang memang direncanakan untuk menggunakan `docker`. Dalam workflow ini `dockerfile` dan code dibuat bersamaan dan dikembangkan sesuai kebutuhan .
+Workflow hybrid menyesuaikan pada perkembangan sistem, dan umumnya diterapkan pada project baru yang memang direncanakan untuk menggunakan `docker`. Dalam workflow ini `dockerfile` dan code dibuat bersamaan dan dikembangkan sesuai kebutuhan .
 
 ```mermaid
 graph LR
@@ -279,7 +297,11 @@ C[build to image]-->D[deploy]
 
 Karena kita telah ngerti dasar dari docker, sekarang kita akan coba lanjut prakatek ya ges ya. Biar ilmu kita semakin setrong...
 
-Studi kasus yang akan kita gunakan adalah aplikasi `react hello-world` dari `vite`
+Studi kasus yang akan kita gunakan adalah aplikasi `react hello-world` dari [vite](https://vitejs.dev/guide/)
+
+```
+npm create vite@latest devops-book -- --template react
+```
 
 Santuy..., kita gk akan ngoding react kok, kita hanya akan gunakan aplikasi react yang sudah ada untuk praktek ilmu-ilmu `docker` kita
 
@@ -295,7 +317,7 @@ Misal, karena kita akan menggunakan `react`, maka kita harus ngerti dulu gimana 
 npm run dev #command run react
 ```
 
-> karena kita menggunakan vite, portnya otomatis di 5173, jadi untuk aksesnya localhost:5173
+> karena kita menggunakan vite, port untuk akses app-nya otomatis di 5173, jadi untuk akses app-nya di localhost:5173
 
 Di react, dependensi aplikasi tersimpan di package.json, dan kita bisa gunakan `npm install` untuk menginstall dependensi tersebut sebelum menjalankan aplikasi agar aplikasnya bisa dijalankan.
 
@@ -303,23 +325,29 @@ Di react, dependensi aplikasi tersimpan di package.json, dan kita bisa gunakan `
 
 Sekarang kita ngerti kalau aplikasi `react` kita akan jalan di `port 5173` dan perlu dependensi yang harus di install dulu sebelum di jalankan pertama kali
 
-Sekarang cara install dependensinya kita udah tau, dan kita juga udah ngerti gimana cara menjalankan aplikasi `react` kita tersebut, jadi sekarang kita bisa lanjut untuk membuat `dockerfile`-nya.
+Cara install dependensinya kita udah tau ya, pakai `npm install`, dan kita juga udah ngerti gimana cara menjalankan aplikasi `react` kita tersebut, pakai `npm run dev`
 
-Buat file dengan nama Dockerfile
+Oleh karena itu, kita bisa mulai nich untuk lanjut nulis `dockerfile`-nya.
+
+Buat file dengan nama `Dockerfile`
 
 ```
 touch Dockerfile
 ```
 
-Lalu buat script untuk dockerfile-nya. React kan berjalan di node ya, jadi kita perlu `base image` `node js`, disini kita pakai `node:18-alpine`, berikutnya kita mau taruh mana sih source code aplikasinya? kita akan taruh di folder `/app` biar tertata rapi, jadi kita akan tetapkan `workdir` nya adalah `/app` kalau gitu
+Lalu buat script untuk dockerfile-nya. React kan berjalan di `node.js` ya, jadi kita perlu `base image` `node.js`, disini kita pakai `node:18-alpine`
 
-Berikutnya kita akan taruh duluan `package.json` nya ya, karena kan untuk berjalan aplikasi kita harus ada dependensinya dulu kan ya
+Berikutnya kita mau taruh mana sih source code aplikasinya? kita akan taruh di folder `/app` biar tertata rapi, jadi kita akan tetapkan `workdir` nya adalah `/app` kalau gitu
 
-Setelah itu, step berikutnya adalah menaruh source code aplikasi kita ke workdir yang telah kita buat sebelumnya yaitu `/app`, tapi karena kita nulis `dockerfile`-nya di tempat yang sama dengan source code app kita, maka kita bisa singkat dengan titik titik aja `COPY . .`, lalu karena app kita dijalankan di `port 5173` kita harus expose port nya agar bisa jalan juga di local
+Berikutnya kita akan taruh duluan `package.json` nya ya, karena kan untuk berjalan aplikasi kita harus ada dependensinya dulu kan ya. Lalu kita install dulu semua dependensinya pakai `npm install`
 
-Terakhir kita tulis gimana cara kita untuk menjalankan aplikasi, yaitu `npm run dev`
+Setelah itu, step berikutnya adalah menaruh source code aplikasi kita ke workdir yang telah kita buat sebelumnya yaitu `/app`, tapi karena kita nulis `dockerfile`-nya di tempat yang sama dengan source code app kita, maka kita bisa singkat dengan titik titik aja `COPY . .`,
 
-Hasil akhirnya seperti dibawah ya ges, syntax seperti `FROM`, `WORKDIR`, `COPY`, `EXPOST`, `RUN` merupakan command `docker`. Santuy, gk perlu dipelajari semua, umumnya diawal kita cuma butuh yang dasar-dasar dulu seperti diatas.
+Lalu karena app kita dijalankan di `port 5173` kita harus expose port nya agar bisa jalan juga di local
+
+Terakhir kita tulis gimana cara kita untuk menjalankan aplikasi-nya, yaitu `npm run dev`
+
+Hasil akhirnya seperti dibawah ya ges, syntax seperti `FROM`, `WORKDIR`, `COPY`, `EXPOSE`, `RUN` merupakan command `docker`. Santuy, gk perlu dipelajari semua, umumnya diawal kita cuma butuh yang dasar-dasar dulu seperti diatas.
 
 ```
 FROM node:18-alpine
@@ -347,6 +375,8 @@ docker build -t devopsbook:1.0.0 .
 ```
 
 Tapi sebelum di build teman-teman harus ubah dulu `viteconfig.js` nya agar bisa menggunakan `docker`.
+
+> Karena kita pakai vite.js untuk buat app react-nya kita harus ikut aturan maen mereka ya ges
 
 ```
 // dari code seperti ini
