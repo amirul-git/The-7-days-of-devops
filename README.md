@@ -15,18 +15,18 @@ Get taste of becoming a `devops engineer` with only 7 days or less. From `docker
 - [x] [Kontainerisasi aplikasi](#kontainerisasi-aplikasi)
   - [x] [Requirement](#requirement)
   - [x] [Create dockerfile](#create-dockerfile)
-  - [x] [Build image](#build-image)
+  - [x] [Build and run docker image](#build-image)
   - [x] [Run image](#run-image)
-- [x] Optimasi docker image dengan multi stage build
-  - [x] Problem dari docker image yang tidak teroptimasi
-  - [x] Requirement
-  - [x] Update dockerfile
-  - [x] Build and Run
-  - [x] v1 (Build) vs v2 (Multi stage build)
-- [x] Docker compose
-  - [x] Intro
-  - [x] Struktur docker compose
-  - [x] Docker compose image react
+- [x] [Optimasi docker image dengan multi stage build](#optimasi-docker-image-dengan-multi-stage-build)
+  - [x] [Masalah dari docker image yang tidak teroptimasi](#masalah-dari-docker-image-yang-tidak-teroptimasi)
+  - [x] [Requirement](#requirement)
+  - [x] [Update dockerfile](#update-dockerfile)
+  - [x] [Build dan Run docker image teroptimasi](#build-dan-run-docker-image-teroptimasi)
+  - [x] [App image v1 (Build) vs App image v2 (Multi stage build)](#app-image-v1-build-vs-app-image-v2-multi-stage-build)
+- [x] [Docker compose](#docker-compose)
+  - [x] [Apa itu docker compose](#apa-itu-docker-compose)
+  - [x] [Struktur docker compose](#struktur-docker-compose)
+  - [x] [Docker compose untuk image react](#docker-compose-untuk-image-react)
 
 #### ECR, The Container Registry
 
@@ -321,7 +321,7 @@ npm run dev #command run react
 
 Di react, dependensi aplikasi tersimpan di package.json, dan kita bisa gunakan `npm install` untuk menginstall dependensi tersebut sebelum menjalankan aplikasi agar aplikasnya bisa dijalankan.
 
-#### Create Dockerfile
+#### Create `Dockerfile`
 
 Sekarang kita ngerti kalau aplikasi `react` kita akan jalan di `port 5173` dan perlu dependensi yang harus di install dulu sebelum di jalankan pertama kali
 
@@ -425,27 +425,31 @@ Sekarang kita bisa mengakses aplikasi `react` kita yang telah terkontainerisasi 
 
 ## Optimasi docker image dengan multi stage build
 
-#### Problem dari docker image yang tidak teroptimasi
+#### Masalah dari docker image yang tidak teroptimasi
 
-Image yang telah kita build sebelumnya mungkin bisa digunakan untuk membuat container yang works. Akan tetapi sebenarnya image tersebut memiliki beberapa kelemahan
+`docker image` yang telah kita build sebelumnya mungkin bisa digunakan untuk membuat container baru. Akan tetapi sebenarnya `docker image` tersebut memiliki beberapa kelemahan
 
 1. Masih menggunakan dev `npm run dev`
-   Seharusnya kita tidak menggunakan `npm run dev` untuk production karena command tersebut digunakan untuk mode development
+   > Seharusnya kita tidak menggunakan `npm run dev` untuk production karena command tersebut digunakan untuk mode development
 2. Size nya yang sangat besar karena belum di optimasi
 
-Sebenarnya aplikasi yang kita buat di react itu bisa kita optimasi untuk production, dan command yang kita gunakan sebenarnya bukan `npm run dev`, tapi `npm run build` sehingga aplikasi kita akan di build sebagai `html+css+js` biasa yang teroptimasi
+Sebenarnya kalau kita mau deploy aplikasi react itu gk boleh pakai command `npm run dev`. Kenapa?. karena command itu hanya untuk development.
+
+Nah saat kita fix mau deploy aplikasi react-nya, kita gunakan command `npm run build` sehingga aplikasi kita akan di build sebagai file `html` + file `css` + file `js`. File-file tersebut adalah aplikasi react yang telah teroptimasi untuk production dan akan kita kontainerisasi
 
 #### Requirement
 
-Sebelum kita mengubah dockerfile kita akan menggunakan `npm run dev`, kita perlu tau bahwa hasil build dari command tersebut adalah `html+css+js`. Tanpa webserver sama sekali. Oleh karena itu kita perlu menggunakan baseimage tambahan sebagai webserver.
+Sebelum kita mengubah dockerfile kita menjadi `npm run build`, kita perlu tau bahwa hasil dari command tersebut adalah file `html+css+js` tanpa webserver sama sekali. Oleh karena itu kita perlu menggunakan baseimage tambahan sebagai webserver.
 
-Jadi kita akan punya 2 base image, base image `node` untuk build aplikasi kita, dan base image `nginx` sebagai server yang akan serve aplikasi kita.
+Jadi kita akan punya 2 base image, `base image` `node` untuk build aplikasi kita, dan `base image` `nginx` sebagai webserver.
 
-Oleh karena kita akan menggunakan `nginx`, kita perlu membuat file config untuk `nginx`.
+Karena kita akan menggunakan `nginx`, kita buat dulu file config untuk `nginx`-nya
 
 ```
-taks: buat file /docker/nginx/conf.d/default.conf
+taks: buat file /docker/nginx/conf.d/default.conf di folder aplikasi
+```
 
+```
 server {
     listen 80;
     root /usr/share/nginx/html;
@@ -459,7 +463,7 @@ server {
 
 #### Update dockerfile
 
-Sekarang kita memfungsikan base image `node` untuk build image nya, dan base image `nginx` untuk server yang akan serve hasil build dari aplikasi react kita ke user
+Sekarang kita akan update dockerfile yang telah kita buat sebelumnya. kita akan gunakan `base image` `node` untuk build image, dan `base image` `nginx` untuk jadi webserver aplikasi react kita
 
 ```
 FROM node:18-alpine as build
@@ -483,54 +487,77 @@ COPY ./docker/nginx/conf.d/default.conf /etc/nginx/conf.d/default.conf
 COPY --from=build /usr/app/dist /usr/share/nginx/html
 ```
 
-Sekarang dockerfile kita sudah bisa digunakan untuk build image yang telah teropsimasi. kalau sebelumnya kita aplikasinya menggunakan vite server, sekarang sudah pakai nginx
+Sekarang dockerfile kita sudah bisa digunakan untuk build `docker image` yang telah teropsimasi. Kalau sebelumnya aplikasi kita menggunakan vite server, sekarang aplikasi sudah pakai `nginx`
 
-#### Build dan Run
+#### Build dan Run `docker image` teroptimasi
+
+Kita `build` dulu `docker image` aplikasi kita
 
 ```
-# build
 docker build -t devopsbook:2.0.0 .
+```
 
-# run
+Lalu kita `run` `docker image` nya
+
+```
 docker run -d -p 5173:5173 devopsbook:2.0.0
 ```
 
-#### v1 vs v2
+#### App image v1 (Build) vs App image v2 (Multi stage build)
 
-Mungkin teman-teman bertanya-tanya kenapa sih kita repot-repot untuk melakukan multi stage build. Kan build biasa dengan `npm run dev` sudah bisa jalan aplikasinya.
+Mungkin teman-teman bertanya-tanya kenapa sih kita repot-repot untuk melakukan `multi stage build`. Kan build biasa dengan `npm run dev` sudah bisa jalan aplikasinya.
 
-Ya memang benar aplikasinya dapat berjalan, tapi sebenarnya image yang kita buat tanpa multi stage build tadi belum teroptimasi. Size image yang belum teroprimasi bisa mencapai ratusan mb sedangkan yang teroptimasi hanya puluhan mb. Selain itu multi stage build yang telah kita lakukan sudah sesuai dengan environment production karena memang seharusnya kita tidak boleh run app yang environment nya dikhusukan untuk development ke server production.
+Ya memang benar aplikasinya dapat berjalan, tapi sebenarnya `docker image` yang kita buat tanpa multi stage build tadi belum teroptimasi.
+
+Size image yang belum teroprimasi bisa mencapai ratusan mb sedangkan yang teroptimasi hanya puluhan mb. Selain itu multi stage build yang telah kita lakukan sudah sesuai dengan environment production karena memang seharusnya kita tidak boleh run app yang environment nya dikhusukan untuk development ke server production.
 
 ## Docker compose
 
-#### Intro
+#### Apa itu docker compose
 
-Docker compose sebenarnya adalah suatu file script yang ditulis dan difungsikan sebagai kumpulan aturan bagi docker engine untuk menjalankan docker image.
+`Docker compose` sebenarnya adalah suatu file script yang difungsikan sebagai kumpulan aturan bagi `docker engine` untuk menjalankan dan mengatur berbagai `docker container`
 
-Docker compose sendiri umumnya digunakan di server untuk running berbagai macam image dengan satu kali command maupun bisa juga digunakan di local untuk setup dev environment.
+`Docker compose` sendiri umumnya digunakan di server untuk membuat `docker container` dari suatu docker image dengan satu kali command
 
-Misal kita butuh untuk menjalankan image `app` kita, butuh menjalankan image `mysql` untuk database dan juga `redis` untuk chaching.
+> Btw di local machine juga bisa hehe
 
-Kalau kita lakukan lakukan docker run satu-satu kan bisa capek banget ya, oleh karena itu kita butuh docker compose agar bisa menjalankan seluruh image yang kita inginkan dengan sekali command.
+Misal kita mau menjalankan `docker image` dari `app` kita, lalu kita juga harus menjalankan `docker image` `mysql` untuk database, dan juga perlu `redis` untuk caching
+
+Kalau kita pakai command `docker run` di masing-masing image kan capek banget kan ya, oleh karena itu disinilah `docker compose` hadir untuk membantu kita membuat dan mengatur berbagai `docker container` dari banyak `docker image` dalam satu command
+
+```
+docker compose up
+```
+
+Dan seluruh container yang ingin kita jalankan akan dibuat secara otomatis oleh `docker compose`
 
 #### Struktur docker compose
 
-Docker compose ditulis dengan bahasa yaml dan penamaan yang dipakai adalah `docker-compose.yaml`
+`Docker compose` ditulis dengan bahasa yaml dan penamaan yang dipakai adalah `compose.yaml`
 
-Untuk struktur docker compose sendiri dipisahkan berdasarkan service. Service sendiri berisi image apa yang dipakai beserta dengan confignya seperti port, volume, dll.
+Untuk struktur `docker compose` sendiri dipisahkan berdasarkan services. Services untuk production berisi `docker image` apa yang dipakai beserta dengan confignya seperti port, volume, dll.
 
 ```
-# Struktur docker compose
 services:
   name:
-    build:
-    image:
+    image: nama-image
     port:
   name:
     ...
 ```
 
-#### Docker compose image react
+Kalau teman-teman ada di local machine, bisa menggunakan path `dockerfile` di bagian build
+
+```
+services:
+  name:
+    dockerfile: Dockerfile
+    port:
+  name:
+    ...
+```
+
+#### Docker compose untuk image react
 
 Sekarang kita akan coba untuk build dan run image menggunakan docker compose
 
@@ -545,9 +572,21 @@ services:
       - 9000:80
 ```
 
-Untuk menjalan file docker compose yang telah dibuat, teman-teman bisa menggunakan command `docker compose up` untuk, dan untuk mendestroy bisa menggunakan command `docker compose down`
+Untuk menjalan file `docker compose` kita akan gunakan command docker compose up
 
-Untuk di server sendiri, umumnya kita sudah memiliki image yang telah di build, oleh karena itu docker compose nya tidak perlu build lagi, tapi langsung consume imagenya
+```
+docker compose up -d
+```
+
+> kita berikan flag -d agar `docker compose` kita bisa jalan di background dan terminal kita masih bisa dipakai
+
+Untuk menghentikan `docker compose` kita bisa menggunakan command
+
+```
+`docker compose down`
+```
+
+Untuk `docker compose` di server production, umumnya kita sudah memiliki `docker image` yang telah di build, oleh karena itu `docker compose` nya tidak perlu bertugas untuk build `docker image` lagi, tapi langsung menjalankan `docker image`-nya
 
 ```
 version: "3.8"
